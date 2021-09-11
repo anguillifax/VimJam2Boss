@@ -1,6 +1,7 @@
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
+[Ll]ogs/
 [Bb]uild/
 [Bb]uilds/
 Assets/AssetStoreTools*
@@ -35,3 +36,4 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+UserSettings/EditorUserSettings.asset
