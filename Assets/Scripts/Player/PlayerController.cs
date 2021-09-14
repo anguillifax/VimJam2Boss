@@ -6,11 +6,11 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
 
-	private Player player;
+	private PlayerAvatar player;
 
 	private void Start()
 	{
-		player = GetComponent<Player>();
+		player = GetComponent<PlayerAvatar>();
 	}
 
 	private void Update()
@@ -19,7 +19,8 @@ public class PlayerController : MonoBehaviour
 		player.MovementInput = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
 
 		// == Combat ==
-		
+		player.AttackInputImpulse = Input.GetMouseButtonDown(0);
+		player.DashInputImpulse = Input.GetButtonDown("Dash");
 	}
 
 	private void OnDisable()

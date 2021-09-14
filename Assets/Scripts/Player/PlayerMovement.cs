@@ -5,18 +5,40 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
 
+	[Header("Values")]
+	public float DashSpeed;
+	public float ChargeSpeed;
 	public float MovementSpeed;
+
 	public Vector3 MovementInput;
 
-	// Start is called before the first frame update
-	void Start()
-    {
-        
-    }
+	protected MovingEntity entity;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+	public bool charging = false;
+	public bool dashing = false;
+
+	private void Start()
+	{
+		entity = GetComponent<MovingEntity>();
+	}
+
+	private void Update()
+	{
+		if (!charging && !dashing)
+		{
+			entity.MovementDirection = MovementInput;
+		}
+
+		if (charging)
+		{
+			entity.MovementSpeed = ChargeSpeed;
+		} else if (dashing)
+		{
+			entity.MovementSpeed = DashSpeed;
+		}
+		else
+		{
+			entity.MovementSpeed = MovementSpeed;
+		}
+	}
 }

@@ -2,10 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GrapplePoint : PhysicsEntity
+public class GrapplePoint : MonoBehaviour
 {
-    public override void Die()
-	{
-		Debug.LogError("Grapple points shouldn't be dying!");
-	}
+	public bool Enabled = true;
+	public bool Deflecting = false;
 }

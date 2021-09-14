@@ -7,14 +7,13 @@ using UnityEngine;
 public class PhysicsEntity : ResettableObject
 {
 
-	[Tooltip("Percentage of incoming knockback ignored")]
-	[Range(0f, 1f)]
-	public float BaseKnockbackResistance = 0f;
+	public PhysicsData physicsData;
 
 	// External velocity. Object is *influenced* to move
-	protected Vector3 latentVelocity;
+	protected Vector3 latentVelocity = Vector3.zero;
 	protected Rigidbody rb;
-	protected float currentKnockbackResistance;
+	// Percentage of knockback ignored. Ranges from 0 to 1
+	protected float currentKnockbackResistance = 0f;
 
 	private Vector3 resetPosition;
 	private Quaternion resetRotation;
@@ -27,19 +26,36 @@ public class PhysicsEntity : ResettableObject
 	}
 
 
-	void Update()
+	void FixedUpdate()
+	{
+		ExtendableFixedUpdate();
+	}
+
+	protected virtual void ExtendableFixedUpdate()
 	{
 		if (!Dead)
 		{
+			SimulateDrag();
 			ApplyPhysics();
 		}
 	}
 
 	public virtual void TakeKnockback(float magnitude, Vector3 origin)
 	{
-		Vector3 direction = (transform.position - origin).normalized;
+		Vector3 direction = transform.position - origin;
 		direction.y = 0;
-		latentVelocity += direction * magnitude * currentKnockbackResistance * BaseKnockbackResistance;
+		float falloff = physicsData.KnockbackFalloff.Evaluate(direction.magnitude);
+		direction = direction.normalized;
+		latentVelocity += direction * magnitude * falloff * (1 - currentKnockbackResistance) * (1 - physicsData.KnockbackResistance);
+	}
+
+	public virtual void TakeKnockback(float magnitude, Vector3 direction, float simulatedFalloffDist)
+	{
+		Vector3 adjustedDirection = direction;
+		adjustedDirection.y = 0;
+		float falloff = physicsData.KnockbackFalloff.Evaluate(simulatedFalloffDist);
+		adjustedDirection = adjustedDirection.normalized;
+		latentVelocity += adjustedDirection * magnitude * falloff * (1 - currentKnockbackResistance) * (1 - physicsData.KnockbackResistance);
 	}
 
 	protected virtual void ApplyPhysics()
@@ -47,7 +63,12 @@ public class PhysicsEntity : ResettableObject
 		rb.velocity = latentVelocity;
 	}
 
-	public void ResetPhysics()
+	protected virtual void SimulateDrag()
+	{
+		latentVelocity *= 1 - (physicsData.Drag * Time.fixedDeltaTime);
+	}
+
+	public virtual void ResetPhysics()
 	{
 		latentVelocity = Vector3.zero;
 		rb.velocity = Vector3.zero;
@@ -59,9 +80,9 @@ public class PhysicsEntity : ResettableObject
 		currentKnockbackResistance = 1;
 	}
 
-	public override void Reset()
+	public override void ResetObj()
 	{
-		base.Reset();
+		base.ResetObj();
 		ResetPhysics();
 		currentKnockbackResistance = 0;
 		transform.position = resetPosition;

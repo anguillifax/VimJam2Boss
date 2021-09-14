@@ -6,22 +6,37 @@ using UnityEngine;
 public class MovingEntity : PhysicsEntity
 {
 
-	public float MovementSpeed;
+	public float StunnedSpeedMultiplier = 0.4f;
+	public float StunResistance = 0f;
+	public float StunRecoverSpeed = 3f;
 
 	// Internal velocity. Object is *trying* to move
 	public Vector3 MovementDirection = Vector3.zero;
+	public float MovementSpeed;
 
-	void FixedUpdate()
+	protected float adjustedMovementSpeed = 0;
+	protected float stunTime = 0;
+
+	protected override void ExtendableFixedUpdate()
 	{
-		if (!Dead)
-		{
-			ApplyPhysics();
-		}
+		SimulateStun();
+		base.ExtendableFixedUpdate();
 	}
 
 	protected override void ApplyPhysics()
 	{
-		rb.velocity = latentVelocity + MovementDirection;
+		rb.velocity = latentVelocity + (MovementDirection * adjustedMovementSpeed);
+	}
+
+	protected virtual void SimulateStun()
+	{
+		adjustedMovementSpeed = MovementSpeed * (StunnedSpeedMultiplier + (Mathf.Clamp01 (1 - stunTime) * (1 - StunnedSpeedMultiplier)));
+		stunTime = Mathf.Max (stunTime - (Time.fixedDeltaTime * StunRecoverSpeed), 0);
+	}
+
+	public void Stun(float time)
+	{
+		stunTime = time * (1f - StunResistance);
 	}
 
 	public override void Die()
@@ -30,9 +45,17 @@ public class MovingEntity : PhysicsEntity
 		MovementDirection = Vector3.zero;
 	}
 
-	public override void Reset()
+	public override void ResetPhysics()
 	{
-		base.Reset();
+		base.ResetPhysics();
 		MovementDirection = Vector3.zero;
+		stunTime = 0;
+	}
+
+	public override void ResetObj()
+	{
+		base.ResetObj();
+		MovementDirection = Vector3.zero;
+		stunTime = 0;
 	}
 }
