@@ -5,29 +5,35 @@ using UnityEngine;
 public class PlayerCombat : MonoBehaviour
 {
 
-	public TargetingSystem targeting;
 	public GrapplePoint EmbeddedTarget = null;
+
+	private TargetingSystem targeting;
 
 	private void Start()
 	{
 		targeting = GetComponent<TargetingSystem>();
 	}
 
-	public GrapplePoint TryThrowShield()
+	// Returns 0 for no target found, 1 for grapple success, and 2 for target deflected grapple
+	public int TryGrapple()
 	{
-		GrapplePoint grapplePoint = targeting.GetTarget();
-		if (grapplePoint != null)
+		EmbeddedTarget = targeting.GetTarget();
+
+		if (!EmbeddedTarget)
 		{
-			if (!grapplePoint.Deflecting)
-			{
-				EmbeddedTarget = grapplePoint;
-			}
+			return 0;
 		}
 
-		return grapplePoint;
+		if (EmbeddedTarget.Deflecting)
+		{
+			return 2;
+		} else
+		{
+			return 1;
+		}
 	}
 
-	public void ReturnShield()
+	public void ReturnGrapple()
 	{
 		EmbeddedTarget = null;
 	}
